@@ -20,13 +20,13 @@ object ControlFunction {
 
 object MainBot {
   def weigthPos(elxy: ElementXY) = elxy.el match {
-    case Snorg => linearWeight(-100.0, elxy.xy.length)
-    case Toxifera => linearWeight(-10.0, elxy.xy.length)
-    case Empty => sqrtWeight(1.0, elxy.xy.length)
-    case Wall => linearWeight(-10.0, elxy.xy.length)
-    case Fluppet => linearWeight(300.0, elxy.xy.length)
-    case Zugar => sqrtWeight(200.0, elxy.xy.length)
-    case _ => linearWeight(0.0, elxy.xy.length)
+    case Snorg => linearWeight(-100.0, elxy.xy.length, 0.1, 1000)
+    case Toxifera => linearWeight(-10.0, elxy.xy.length, 0.1, 1000)
+    case Empty => sqrtWeight(1.0, elxy.xy.length, 0.1, 1000)
+    case Wall => linearWeight(-10.0, elxy.xy.length, 0.1, 1000)
+    case Fluppet => linearWeight(300.0, elxy.xy.length, 0.1, 1000)
+    case Zugar => sqrtWeight(200.0, elxy.xy.length, 0.1, 1000)
+    case _ => linearWeight(0.0, elxy.xy.length, 0.1, 1000)
   }
 
   def weightPos(view: View, pos: XY) = {
@@ -37,12 +37,12 @@ object MainBot {
 
   def constWeight(weight: Double, length: Double) = weight
 
-  def sqrtWeight(weight: Double, length: Double) =
-    if (length == 0) weight * 1000
+  def sqrtWeight(weight: Double, length: Double, crit: Double, critMulti: Double) =
+    if (length < crit) weight * critMulti
     else weight / math.sqrt(length)
 
-  def linearWeight(weight: Double, length: Double) =
-    if (length == 0) weight * 1000
+  def linearWeight(weight: Double, length: Double, crit: Double, critMulti: Double) =
+    if (length < crit) weight * critMulti
     else weight / length
 
   def react(view: View): String = {
