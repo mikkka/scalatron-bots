@@ -9,6 +9,7 @@ case class View(cells: String) {
   val map = cells.grouped(size).map(str => str.toCharArray.map(Element(_))).toArray
 
   def apply(pos: XY) = map(pos.y)(pos.x)
+  def elxy(pos: XY) = ElementXY(apply(pos), pos)
 
   def linear(p: Element => Boolean) = map.par.view.zipWithIndex.flatMap(l =>
     l._1.zipWithIndex.filter(t => {p(t._1)}).map(e => ElementXY(e._1, XY(e._2, l._2)))).toList
@@ -23,6 +24,22 @@ case class View(cells: String) {
     val offs = linear(predicate).map(exy => ElementXY(exy.el, exy.xy - pos))
     offs
   }
+
+  def part45(vec: XY) =
+    (if(math.abs(vec.x) == math.abs(vec.y)) {
+      for (
+        x <- if (vec.x == -1) 0 to center.x else center.x until size;
+        y <- if (vec.y == -1) 0 to center.y else center.y until size
+      ) yield elxy(XY(x, y))
+    } else {
+      for (
+        height <- 0 to size / 2;
+        width <- (-height) to (+height)
+      ) yield {
+        if (math.abs(vec.x) == 1) elxy(XY(center.x + (vec.x * height), center.y + width))
+        else elxy(XY(center.x + width, center.y + (vec.y * height)))
+      }
+    }).filter(_.xy != center).toList
 }
 
 abstract sealed class Element() {
