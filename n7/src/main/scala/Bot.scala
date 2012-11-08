@@ -23,7 +23,7 @@ object MainBot {
     case Snorg => linearWeight(-100.0, elxy.xy.length)
     case Toxifera => linearWeight(-10.0, elxy.xy.length)
     case Empty => sqrtWeight(1.0, elxy.xy.length)
-    case Wall => sqrtWeight(-10.0, elxy.xy.length)
+    case Wall => linearWeight(-10.0, elxy.xy.length)
     case Fluppet => sqrtWeight(150.0, elxy.xy.length)
     case Zugar => sqrtWeight(200.0, elxy.xy.length)
     case _ => linearWeight(0.0, elxy.xy.length)
