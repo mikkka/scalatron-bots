@@ -26,7 +26,7 @@ object MainBot {
     case Wall => linearWeight(-10.0, elxy.xy.length, 0.1, 1000)
     case Fluppet => linearWeight(300.0, elxy.xy.length, 0.1, 1000)
     case Zugar => sqrtWeight(200.0, elxy.xy.length, 0.1, 1000)
-    case _ => linearWeight(0.0, elxy.xy.length, 0.1, 1000)
+    case _ => 0.0
   }
 
   def weightPos(view: View, pos: XY) = {
@@ -35,7 +35,9 @@ object MainBot {
     }
   }
 
-  def constWeight(weight: Double, length: Double) = weight
+  def sqrWeight(weight: Double, length: Double, crit: Double, critMulti: Double) =
+    if (length < crit) weight * critMulti
+    else weight / (length * length)
 
   def sqrtWeight(weight: Double, length: Double, crit: Double, critMulti: Double) =
     if (length < crit) weight * critMulti
