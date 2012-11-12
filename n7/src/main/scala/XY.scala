@@ -10,5 +10,6 @@ case class XY(x: Int, y: Int) {
   def distanceTo(pos: XY) : Double = (this-pos).length
   def length : Double = math.sqrt(x*x + y*y)
   def signum = XY(x.signum, y.signum)
+  def scalar(o: XY): Double = this.x * o.x + this.y * o.y
   def toEntityName = x + "_" + y
 }
