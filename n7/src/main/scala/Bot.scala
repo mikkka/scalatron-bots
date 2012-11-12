@@ -20,10 +20,10 @@ object ControlFunction {
 
 object MainBot {
   def weigthPos(elxy: ElementXY) = elxy.el match {
-    case Snorg => linearWeight(-100.0, elxy.xy.length, 0.1, 1000)
+    case Snorg => sqrWeight(-200.0, elxy.xy.length, 1, 1000)
     case Toxifera => linearWeight(-10.0, elxy.xy.length, 0.1, 1000)
     case Empty => sqrtWeight(1.0, elxy.xy.length, 0.1, 1000)
-    case Wall => linearWeight(-10.0, elxy.xy.length, 0.1, 1000)
+    case Wall => linearWeight(-10.0, elxy.xy.length, 0.1, 10000)
     case Fluppet => linearWeight(300.0, elxy.xy.length, 0.1, 1000)
     case Zugar => sqrtWeight(200.0, elxy.xy.length, 0.1, 1000)
     case _ => 0.0
