@@ -25,7 +25,10 @@ case class View(cells: String) {
     offs
   }
 
+  def relative(xs: List[ElementXY]) = xs.map(elxy => ElementXY(elxy.el, XY(elxy.xy.x - center.x, elxy.xy.y - center.y)))
+
   def part45(vec: XY) =
+    relative(
     (if(math.abs(vec.x) == math.abs(vec.y)) {
       for (
         x <- if (vec.x == -1) 0 to center.x else center.x until size;
@@ -39,7 +42,7 @@ case class View(cells: String) {
         if (math.abs(vec.x) == 1) elxy(XY(center.x + (vec.x * height), center.y + width))
         else elxy(XY(center.x + width, center.y + (vec.y * height)))
       }
-    }).filter(_.xy != center).toList
+    }).filter(_.xy != center).toList)
 }
 
 abstract sealed class Element() {
