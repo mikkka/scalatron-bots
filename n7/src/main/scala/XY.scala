@@ -13,3 +13,12 @@ case class XY(x: Int, y: Int) {
   def scalar(o: XY): Double = this.x * o.x + this.y * o.y
   def toEntityName = x + "_" + y
 }
+
+object XY {
+  def apply(s: String) : XY = {
+    val a = s.split(':')
+    XY(a(0).toInt, a(1).toInt)
+  }
+
+  val Zero = XY(0, 0)
+}
