@@ -30,24 +30,16 @@ object MainBot {
     case _ => 0.0
   }
 
-  def weigthElRelative2(elxy: ElementXY) = elxy.el match {
-    case Snorg => sqrWeight(-200.0, elxy.xy.length, 2, 1000)
-    case Toxifera => linearWeight(-10.0, elxy.xy.length, 2, 1000)
-    case Empty => sqrtWeight(1.0, elxy.xy.length, 2, 1000)
-    case Wall => linearWeight(-10.0, elxy.xy.length, 2, 10000)
-    case Fluppet => linearWeight(300.0, elxy.xy.length, 2, 1000)
-    case Zugar => sqrtWeight(200.0, elxy.xy.length, 2, 1000)
-    case _ => 0.0
+  def donttouchit(el: Element) = el match {
+    case Snorg => true
+    case Toxifera => true
+    case Wall => true
+    case _ => false
   }
 
   def weightPos(view: View, pos: XY, vector: XY) = view.offsets(pos + vector, _ != Unknown).foldLeft(0.0) {(accu, exy) =>
     val cos = vector.scalar(exy.xy) / (vector.length * exy.xy.length)
     accu +  weigthElRelative(exy) * (if (cos > 0.8) cos else 0.8)
-  }
-
-  def weightDirection(sector: List[ElementXY], dir: XY) = sector.foldLeft(0.0) {(accu, exy) =>
-    val cos = dir.scalar(exy.xy) / (dir.length * exy.xy.length)
-    accu + cos * weigthElRelative2(exy)
   }
 
   def sqrWeight(weight: Double, length: Double, crit: Double, critMulti: Double) =
@@ -72,11 +64,14 @@ object MainBot {
     val unitOffsets = (for (
       x <- -1 to 1;
       y <- -1 to 1
-      if !(x == 0 && y == 0)
-
+      if !(x == 0 && y == 0 && !donttouchit(view.relative(XY(x, y))))
     ) yield (XY(x,y), weightPos(view, view.center, XY(x,y))))
 
-    val move = unitOffsets.maxBy(_._2)._1
-    new Output().move(move)
+    if (!unitOffsets.isEmpty) {
+      val move = unitOffsets.maxBy(_._2)._1
+      new Output().move(move)
+    } else {
+      new Output
+    }
   }
 }
