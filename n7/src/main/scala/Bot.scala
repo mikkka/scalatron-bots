@@ -12,8 +12,9 @@ object ControlFunction {
     val (opcode, paramMap) = CommandParser(input)
 
     if( opcode == "React" ) {
-      val viewString = paramMap("view")
-      MainBot.react(View(viewString))
+      val input = new Input(paramMap)
+      val output = MainBot.react(input)
+      output.toString
     } else ""
   }
 }
@@ -62,20 +63,16 @@ object MainBot {
     if (length < crit) weight * critMulti
     else weight / length
 
-  def react(view: View): String = {
+  def react(input: Input): Output = {
+    val view = input.view
+
     val unitOffsets = (for (
       x <- -1 to 1;
       y <- -1 to 1
       if !(x == 0 && y == 0)
     ) yield (XY(x,y), weightPos(view, view.center, XY(x,y))))
 
-//    val unitOffsets = (for (
-//      x <- -1 to 1;
-//      y <- -1 to 1
-//      if !(x == 0 && y == 0)
-//    ) yield (XY(x,y), weightDirection(view.part45(XY(x, y)), XY(x,y)) * (1 + (math.random / 100))))
-
     val move = unitOffsets.maxBy(_._2)._1
-    "Move(direction=" + move + ")"
+    new Output().move(move)
   }
 }
