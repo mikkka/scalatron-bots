@@ -8,7 +8,8 @@ case class XY(x: Int, y: Int) {
   def +(pos: XY) = XY(x+pos.x, y+pos.y)
   def -(pos: XY) = XY(x-pos.x, y-pos.y)
   def distanceTo(pos: XY) : Double = (this-pos).length
-  def length : Double = math.sqrt(x*x + y*y)
+  //TODO: переделать на расстояния в шагах
+  def length : Double = math.max(math.abs(x), math.abs(y))
   def signum = XY(x.signum, y.signum)
   def scalar(o: XY): Double = this.x * o.x + this.y * o.y
   def toEntityName = x + "_" + y
