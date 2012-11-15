@@ -69,7 +69,7 @@ object MainBot {
 
     if (!unitOffsets.isEmpty) {
       val move = unitOffsets.maxBy(_._2)._1
-      new Output().move(move)
+      new Output(input.params, input.history).move(move)
     } else {
       new Output
     }

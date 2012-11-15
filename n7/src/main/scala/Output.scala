@@ -3,21 +3,33 @@
  * Date: 13.11.12
  * Time: 18:39
  */
-class Output {
-  private var stateParams = Map.empty[String,Any]     // holds "Set()" commands
-  private var commands = ""                           // holds all other commands
-  private var debugOutput = ""                        // holds all "Log()" output
+case class Output(stateParams: Map[String, Any], commands: String, debugOutput: String, history: List[XY]) {
+  val historySize = 10
 
-  private def append(s: String) = {
-    commands += (if(commands.isEmpty) s else "|" + s)
-    this
-  }
+  def this() = this(Map.empty, "", "", List.empty)
+  def this(params: Map[String, String]) = this(params, "", "", List.empty)
+  def this(params: Map[String, String], h: List[XY]) = this(params, "", "", h)
+
+  private def append(s: String) = new Output(stateParams, (if(commands.isEmpty) s else "|" + s), debugOutput, history)
+
+  def set(params: (String,Any)*) = new Output(stateParams ++ params, commands, debugOutput, history)
+
+  def set(keyPrefix: String, xy: XY) =
+    new Output(stateParams ++ List(keyPrefix+"x" -> xy.x, keyPrefix+"y" -> xy.y), commands, debugOutput, history)
+
+  def log(text: String) = new Output(stateParams, commands, debugOutput + text + "\n", history)
+
+  def addHistory(xy: XY) = new Output(stateParams, commands, debugOutput, (xy :: history).take(10))
 
   override def toString = {
     var result = commands
     if(!stateParams.isEmpty) {
       if(!result.isEmpty) result += "|"
       result += stateParams.map(e => e._1 + "=" + e._2).mkString("Set(",",",")")
+    }
+    if(!history.isEmpty) {
+      if(!result.isEmpty) result += "|"
+      result += "Set(_history=" + history.map(_.toString).mkString(";") + ")"
     }
     if(!debugOutput.isEmpty) {
       if(!result.isEmpty) result += "|"
@@ -26,12 +38,12 @@ class Output {
     result
   }
 
-  def log(text: String) = {
-    debugOutput += text + "\n"
-    this
-  }
+  def move(direction: XY) =
+    (history match {
+      case x :: xs => addHistory(x + direction)
+      case _ => addHistory(direction)
+    }).append("Move(direction=" + direction + ")")
 
-  def move(direction: XY) = append("Move(direction=" + direction + ")")
   def say(text: String) = append("Say(text=" + text + ")")
   def status(text: String) = append("Status(text=" + text + ")")
   def explode(blastRadius: Int) = append("Explode(size=" + blastRadius + ")")
@@ -40,14 +52,4 @@ class Output {
     append("Spawn(direction=" + offset +
       (if(params.isEmpty) "" else "," + params.map(e => e._1 + "=" + e._2).mkString(",")) +
       ")")
-
-  def set(params: (String,Any)*) = {
-    stateParams ++= params
-    this
-  }
-
-  def set(keyPrefix: String, xy: XY) = {
-    stateParams ++= List(keyPrefix+"x" -> xy.x, keyPrefix+"y" -> xy.y)
-    this
-  }
 }

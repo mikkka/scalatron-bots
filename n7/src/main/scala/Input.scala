@@ -3,11 +3,16 @@
  * Date: 13.11.12
  * Time: 18:36
  */
-class Input(params: Map[String, String]) {
+case class Input(params: Map[String, String]) {
   val view = View(params("view"))
   val energy = params("energy").toInt
   val time = params("time").toInt
   val generation = params("generation").toInt
+  val history = params.getOrElse("_history", "").
+    split(";").
+    map(s => if (!s.isEmpty) XY(s) else null).
+    filter(_ != null).toList
+
   def offsetToMaster = inputAsXYOrElse("master", XY.Zero)
 
   def inputOrElse(key: String, fallback: String) = params.getOrElse(key, fallback)
