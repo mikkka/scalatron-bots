@@ -8,7 +8,7 @@ case class Input(params: Map[String, String]) {
   val energy = params("energy").toInt
   val time = params("time").toInt
   val generation = params("generation").toInt
-  val history = params.getOrElse("_history", "").
+  val history = params.getOrElse("_history", "0:0").
     split(";").
     map(s => if (!s.isEmpty) XY(s) else null).
     filter(_ != null).toList

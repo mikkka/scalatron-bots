@@ -39,10 +39,7 @@ case class Output(stateParams: Map[String, Any], commands: String, debugOutput: 
   }
 
   def move(direction: XY) =
-    (history match {
-      case x :: xs => addHistory(x + direction)
-      case _ => addHistory(direction)
-    }).append("Move(direction=" + direction + ")")
+    addHistory(direction).append("Move(direction=" + direction + ")")
 
   def say(text: String) = append("Say(text=" + text + ")")
   def status(text: String) = append("Status(text=" + text + ")")
