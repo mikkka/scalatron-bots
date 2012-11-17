@@ -9,7 +9,7 @@ case class Input(params: Map[String, String]) {
   val time = params("time").toInt
   val generation = params("generation").toInt
 
-  val history = params.getOrElse("_historyMoves", "").
+  val history = params.getOrElse("_history", "0:0;0:0").
     split(";").toList.
     map(s => if (!s.isEmpty) XY(s) else null).
     filter(_ != null).sliding(2).

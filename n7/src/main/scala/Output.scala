@@ -37,7 +37,7 @@ case class Output(stateParams: Map[String, Any], commands: String, debugOutput: 
     }
 
     //write moves
-    if(history.isEmpty) {
+    if(!history.isEmpty) {
       if(!result.isEmpty) result += "|"
       result += "Set(_history=" + history.map(el => el._1.toString + ";" + el._2.toString).mkString(";") + ")"
     }
