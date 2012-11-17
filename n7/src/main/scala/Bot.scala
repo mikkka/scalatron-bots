@@ -75,3 +75,9 @@ object MainBot {
     }
   }
 }
+
+//object SnorgDiversionaryBot {
+//  def react(input: Input): Output =  {
+//  }
+//}
+
