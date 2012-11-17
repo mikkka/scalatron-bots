@@ -68,7 +68,18 @@ object MainBot {
     ) yield (XY(x,y), weightPos(view, view.center, XY(x,y))))
 
     if (!unitOffsets.isEmpty) {
-      val move = unitOffsets.maxBy(_._2)._1
+      val currCoord = input.coords.head
+      val lastCoords = input.coords.take(10)
+
+      val move = unitOffsets.
+        //поправка на предыдущие ходы
+        map(mw =>
+          if (lastCoords.contains(currCoord + mw._1))
+            (mw._1, mw._2 - 50)
+          else
+            mw
+      ).maxBy(_._2)._1
+
       new Output(input.params, input.history).move(move)
     } else {
       new Output
