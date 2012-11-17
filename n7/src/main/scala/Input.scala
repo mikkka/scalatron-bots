@@ -8,10 +8,15 @@ case class Input(params: Map[String, String]) {
   val energy = params("energy").toInt
   val time = params("time").toInt
   val generation = params("generation").toInt
-  val history = params.getOrElse("_history", "0:0").
-    split(";").
+
+  val history = params.getOrElse("_historyMoves", "").
+    split(";").toList.
     map(s => if (!s.isEmpty) XY(s) else null).
-    filter(_ != null).toList
+    filter(_ != null).sliding(2).
+    zipWithIndex.filter(_._2 % 2 == 0).map(_._1).collect{case List(move, coord) => (move, coord)}.toList
+
+  val moves = history.map(_._1)
+  val coords = history.map(_._2)
 
   def offsetToMaster = inputAsXYOrElse("master", XY.Zero)
 

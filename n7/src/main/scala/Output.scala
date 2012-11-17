@@ -3,12 +3,13 @@
  * Date: 13.11.12
  * Time: 18:39
  */
-case class Output(stateParams: Map[String, Any], commands: String, debugOutput: String, history: List[XY]) {
-  val historySize = 10
+case class Output(stateParams: Map[String, Any], commands: String, debugOutput: String,
+                  history: List[(XY, XY)]) {
+  val historySize = 50
 
   def this() = this(Map.empty, "", "", List.empty)
   def this(params: Map[String, String]) = this(params, "", "", List.empty)
-  def this(params: Map[String, String], h: List[XY]) = this(params, "", "", h)
+  def this(params: Map[String, String], h: List[(XY, XY)]) = this(params, "", "", h)
 
   private def append(s: String) = new Output(stateParams, (if(commands.isEmpty) s else "|" + s), debugOutput, history)
 
@@ -19,7 +20,14 @@ case class Output(stateParams: Map[String, Any], commands: String, debugOutput: 
 
   def log(text: String) = new Output(stateParams, commands, debugOutput + text + "\n", history)
 
-  def addHistory(xy: XY) = new Output(stateParams, commands, debugOutput, (xy :: history).take(10))
+  /*
+    adding move to history. should automatically compute new coords
+   */
+  def addHistory(move: XY) = {
+    val prevH = history.headOption.getOrElse((XY(0,0),XY(0,0)))
+    val newh = (move, prevH._2 + move)
+    new Output(stateParams, commands, debugOutput, (newh :: history).take(10))
+  }
 
   override def toString = {
     var result = commands
@@ -27,10 +35,13 @@ case class Output(stateParams: Map[String, Any], commands: String, debugOutput: 
       if(!result.isEmpty) result += "|"
       result += stateParams.map(e => e._1 + "=" + e._2).mkString("Set(",",",")")
     }
-    if(!history.isEmpty) {
+
+    //write moves
+    if(history.isEmpty) {
       if(!result.isEmpty) result += "|"
-      result += "Set(_history=" + history.map(_.toString).mkString(";") + ")"
+      result += "Set(_history=" + history.map(el => el._1.toString + ";" + el._2.toString).mkString(";") + ")"
     }
+
     if(!debugOutput.isEmpty) {
       if(!result.isEmpty) result += "|"
       result += "Log(text=" + debugOutput + ")"
