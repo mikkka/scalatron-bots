@@ -61,10 +61,17 @@ object MainBot {
 
   def makeMove(input: Input, output: Output) = {
     val view = input.view
-    val dirs = XY.directions.filter(xy => !donttouchit(view.relative(xy)))
-    val movesWeights = dirs.
-      //filter(xy => !donttouchit(view.relative(xy))).
+
+    val movesWeights = XY.directions.
+      filter(xy => !donttouchit(view.from(xy))).
       map(xy => (xy, weightPos(view, view.center, xy)))
+
+//    val movesWeights = (for (
+//      x <- -1 to 1;
+//      y <- -1 to 1
+//      if !(x == 0 && y == 0) && !donttouchit(view.from(XY(x, y)))
+//    ) yield (XY(x,y), weightPos(view, view.center, XY(x,y))))
+
 
     if (!movesWeights.isEmpty) {
       val currCoord = input.coords.head
@@ -86,17 +93,18 @@ object MainBot {
   }
 
   def launchSnorgTemper(input: Input, output: Output) = {
-    val view = input.view
-    val dangerDirections = XY.directions.map(xy =>
-      (xy, view.part45(xy).count(elxy => elxy.el == Snorg && (3 to 6).contains(elxy.xy.length)))
-    ).filter((el) => el._2 > 3)
-
-    if (input.energy > 500 && !dangerDirections.isEmpty) {
-      val dangerDirection = dangerDirections.maxBy(_._2)._1
-      output.spawn(dangerDirection, "type" -> "diversant")
-    } else {
-      output
-    }
+    output
+//    val view = input.view
+//    val dangerDirections = XY.directions.map(xy =>
+//      (xy, view.part45(xy).count(elxy => elxy.el == Snorg && (3 to 6).contains(elxy.xy.length)))
+//    ).filter((el) => el._2 > 3)
+//
+//    if (input.energy > 500 && !dangerDirections.isEmpty) {
+//      val dangerDirection = dangerDirections.maxBy(_._2)._1
+//      output.spawn(dangerDirection, "type" -> "diversant")
+//    } else {
+//      output
+//    }
   }
 
   def launchMissile(input: Input, output: Output) = output

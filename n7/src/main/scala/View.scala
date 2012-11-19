@@ -9,7 +9,7 @@ case class View(cells: String) {
   val map = cells.grouped(size).map(str => str.toCharArray.map(Element(_))).toArray
 
   def apply(pos: XY) = map(pos.y)(pos.x)
-  def relative(pos: XY) = apply(center - pos)
+  def from(pos: XY) = apply(center + pos)
   def elxy(pos: XY) = ElementXY(apply(pos), pos)
 
   def linear(p: Element => Boolean) = map.par.view.zipWithIndex.flatMap(l =>
