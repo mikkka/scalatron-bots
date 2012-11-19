@@ -61,8 +61,9 @@ object MainBot {
 
   def makeMove(input: Input, output: Output) = {
     val view = input.view
-    val movesWeights = XY.directions.
-      filter(xy => !donttouchit(view.relative(xy))).
+    val dirs = XY.directions.filter(xy => !donttouchit(view.relative(xy)))
+    val movesWeights = dirs.
+      //filter(xy => !donttouchit(view.relative(xy))).
       map(xy => (xy, weightPos(view, view.center, xy)))
 
     if (!movesWeights.isEmpty) {
@@ -78,13 +79,26 @@ object MainBot {
           mw
       ).maxBy(_._2)._1
 
-      new Output(input.params, input.history).move(move)
+      new Output(Map.empty, input.history).move(move)
     } else {
       output
     }
   }
 
-  def launchSnorgTemper(input: Input, output: Output) = output
+  def launchSnorgTemper(input: Input, output: Output) = {
+    val view = input.view
+    val dangerDirections = XY.directions.map(xy =>
+      (xy, view.part45(xy).count(elxy => elxy.el == Snorg && (3 to 6).contains(elxy.xy.length)))
+    ).filter((el) => el._2 > 3)
+
+    if (input.energy > 500 && !dangerDirections.isEmpty) {
+      val dangerDirection = dangerDirections.maxBy(_._2)._1
+      output.spawn(dangerDirection, "type" -> "diversant")
+    } else {
+      output
+    }
+  }
+
   def launchMissile(input: Input, output: Output) = output
   def launchAntiMissile(input: Input, output: Output) = output
 
