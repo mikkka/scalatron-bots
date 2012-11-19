@@ -58,37 +58,58 @@ object MainBot {
     if (length < crit) weight * critMulti
     else weight / length
 
-  def react(input: Input): Output = {
+
+  def makeMove(input: Input, output: Output) = {
     val view = input.view
+    val movesWeights = XY.directions.
+      filter(xy => !donttouchit(view.relative(xy))).
+      map(xy => (xy, weightPos(view, view.center, xy)))
 
-    val unitOffsets = (for (
-      x <- -1 to 1;
-      y <- -1 to 1
-      if !(x == 0 && y == 0 && !donttouchit(view.relative(XY(x, y))))
-    ) yield (XY(x,y), weightPos(view, view.center, XY(x,y))))
-
-    if (!unitOffsets.isEmpty) {
+    if (!movesWeights.isEmpty) {
       val currCoord = input.coords.head
       val lastCoords = input.coords.take(10)
 
-      val move = unitOffsets.
+      val move = movesWeights.
         //поправка на предыдущие ходы
         map(mw =>
-          if (lastCoords.contains(currCoord + mw._1))
-            (mw._1, mw._2 - 50)
-          else
-            mw
+        if (lastCoords.contains(currCoord + mw._1))
+          (mw._1, mw._2 - 50)
+        else
+          mw
       ).maxBy(_._2)._1
 
       new Output(input.params, input.history).move(move)
     } else {
-      new Output
+      output
     }
+  }
+
+  def launchSnorgTemper(input: Input, output: Output) = output
+  def launchMissile(input: Input, output: Output) = output
+  def launchAntiMissile(input: Input, output: Output) = output
+
+  def react(input: Input): Output = {
+    launchSnorgTemper(input, launchMissile(input, launchAntiMissile(input, makeMove(input, new Output))))
   }
 }
 
-//object SnorgDiversionaryBot {
+object SnorgDiversionaryBot {
+  def donttouchit(el: Element) = el match {
+    case Snorg => true
+    case Toxifera => true
+    case Wall => true
+    case _ => false
+  }
+
+
 //  def react(input: Input): Output =  {
+//    val unitOffsets = (for (
+//      x <- -1 to 1;
+//      y <- -1 to 1
+//      if !(x == 0 && y == 0 && !donttouchit(view.relative(XY(x, y))))
+//    ) yield (XY(x,y), weightPos(view, view.center, XY(x,y))))
+//
+//
 //  }
-//}
+}
 

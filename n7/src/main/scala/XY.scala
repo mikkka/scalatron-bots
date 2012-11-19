@@ -22,4 +22,5 @@ object XY {
   }
 
   val Zero = XY(0, 0)
+  val directions = for (x <- -1 to 1; y <- -1 to 1 if !(x == 0 && y == 0)) yield XY(x, y)
 }
