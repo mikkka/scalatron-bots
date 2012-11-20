@@ -81,16 +81,19 @@ object BotStrategies {
     }
   }
 
+  //начинаем размножаться в случае опасности и если энергии больше 250 и если концентрация наших ботов не слишком велика
   def makeLove(input: Input, output: Output) = {
     val view = input.view
     val dangerDirections = XY.directions.map(xy =>
-      (xy, view.part45(xy).count(elxy => elxy.el == Snorg && (3 to 6).contains(elxy.xy.length)))
+      (xy, view.part45(xy).
+        count(elxy => (elxy.el == Snorg || elxy.el == EnemyMiniBot) && (3 to 8).contains(elxy.xy.length)))
     ).filter((el) => el._2 > 1)
 
-    val slaveCount = input.inputAsIntOrElse("slaveCount", 0)
-    if (input.energy > 500 && !dangerDirections.isEmpty && slaveCount < 4 && input.generation < 4) {
+    val emptyCount = input.view.linear(el => el != Wall && el != Unknown).size
+    val botsCount = input.view.linear(el => el == MiniBot).size
+    if (input.energy > 250 && !dangerDirections.isEmpty && (1.0 * botsCount) / emptyCount < 0.05) {
       val dangerDirection = dangerDirections.maxBy(_._2)._1
-      output.spawn(dangerDirection, "type" -> "swarm").set("slaveCount" -> (slaveCount + 1))
+      output.spawn(dangerDirection, "type" -> "swarm")
     } else {
       output
     }
