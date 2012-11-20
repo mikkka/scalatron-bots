@@ -8,12 +8,17 @@ case class View(cells: String) {
   val center = XY(size/2, size/2)
   val map = cells.grouped(size).map(str => str.toCharArray.map(Element(_))).toArray
 
+  private val _linear = map.par.view.zipWithIndex.
+    flatMap(l => l._1.zipWithIndex.filter(_ != Unknown).map(e => ElementXY(e._1, XY(e._2, l._2)))).toList
+
   def apply(pos: XY) = map(pos.y)(pos.x)
   def from(pos: XY) = apply(center + pos)
   def elxy(pos: XY) = ElementXY(apply(pos), pos)
 
-  def linear(p: Element => Boolean) = map.par.view.zipWithIndex.flatMap(l =>
-    l._1.zipWithIndex.filter(t => {p(t._1)}).map(e => ElementXY(e._1, XY(e._2, l._2)))).toList
+  def linear(p: Element => Boolean) = _linear.filter(exy => p(exy.el))
+
+//    map.par.view.zipWithIndex.flatMap(l =>
+//    l._1.zipWithIndex.filter(t => {p(t._1)}).map(e => ElementXY(e._1, XY(e._2, l._2)))).toList
 
   def offsetToNearestElement(pos: XY, predicate: Element => Boolean) = {
     val relativePositions = linear(predicate).map(exy => ElementXY(exy.el, exy.xy - pos))
@@ -23,6 +28,11 @@ case class View(cells: String) {
 
   def offsets(pos: XY, predicate: Element => Boolean) = {
     val offs = linear(predicate).map(exy => ElementXY(exy.el, exy.xy - pos))
+    offs
+  }
+
+  def offsets(pos: XY) = {
+    val offs = _linear.map(exy => ElementXY(exy.el, exy.xy - pos))
     offs
   }
 
