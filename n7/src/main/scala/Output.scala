@@ -11,7 +11,8 @@ case class Output(stateParams: Map[String, Any], commands: String, debugOutput: 
   def this(params: Map[String, String]) = this(params, "", "", List.empty)
   def this(params: Map[String, String], h: List[(XY, XY)]) = this(params, "", "", h)
 
-  private def append(s: String) = new Output(stateParams, (if(commands.isEmpty) s else "|" + s), debugOutput, history)
+  private def append(s: String) =
+    new Output(stateParams, (if(commands.isEmpty) s else commands + "|" + s), debugOutput, history)
 
   def set(params: (String,Any)*) = new Output(stateParams ++ params, commands, debugOutput, history)
 
