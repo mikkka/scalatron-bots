@@ -1,3 +1,4 @@
+import WeightFunc._
 /**
  * User: mick
  * Date: 29.08.12
@@ -13,13 +14,13 @@ object ControlFunction {
 
     if( opcode == "React" ) {
       val input = new Input(paramMap)
-      val output = MainBot.react(input)
+      val output = BotStrategies.react(input)
       output.toString
     } else ""
   }
 }
 
-object MainBot {
+object BotStrategies {
   def weigthElRelative(elxy: ElementXY) = elxy.el match {
     case Snorg => sqrWeight(-400.0, elxy.xy.length, 1, 100)
     case Toxifera => sqrtWeight(-10.0, elxy.xy.length, 0.1, 100)
@@ -42,36 +43,12 @@ object MainBot {
     accu +  weigthElRelative(exy) * (if (cos > 0.8) cos else 0.8)
   }
 
-  def sqrWeight(weight: Double, length: Double, crit: Double, critMulti: Double) =
-    if (length < crit)
-      weight * critMulti
-    else
-      weight / (length * length)
-
-  def sqrtWeight(weight: Double, length: Double, crit: Double, critMulti: Double) =
-    if (length < crit)
-      weight * critMulti
-    else
-      weight / math.sqrt(length)
-
-  def linearWeight(weight: Double, length: Double, crit: Double, critMulti: Double) =
-    if (length < crit) weight * critMulti
-    else weight / length
-
-
-  def makeMove(input: Input, output: Output) = {
+  def eatAndRun(input: Input, output: Output) = {
     val view = input.view
 
     val movesWeights = XY.directions.
       filter(xy => !donttouchit(view.from(xy))).
       map(xy => (xy, weightPos(view, view.center, xy)))
-
-//    val movesWeights = (for (
-//      x <- -1 to 1;
-//      y <- -1 to 1
-//      if !(x == 0 && y == 0) && !donttouchit(view.from(XY(x, y)))
-//    ) yield (XY(x,y), weightPos(view, view.center, XY(x,y))))
-
 
     if (!movesWeights.isEmpty) {
       val currCoord = input.coords.head
@@ -92,46 +69,31 @@ object MainBot {
     }
   }
 
-  def launchSnorgTemper(input: Input, output: Output) = {
-    output
-//    val view = input.view
-//    val dangerDirections = XY.directions.map(xy =>
-//      (xy, view.part45(xy).count(elxy => elxy.el == Snorg && (3 to 6).contains(elxy.xy.length)))
-//    ).filter((el) => el._2 > 3)
-//
-//    if (input.energy > 500 && !dangerDirections.isEmpty) {
-//      val dangerDirection = dangerDirections.maxBy(_._2)._1
-//      output.spawn(dangerDirection, "type" -> "diversant")
-//    } else {
-//      output
-//    }
+  def makeLove(input: Input, output: Output) = {
+    val view = input.view
+    val dangerDirections = XY.directions.map(xy =>
+      (xy, view.part45(xy).count(elxy => elxy.el == Snorg && (3 to 6).contains(elxy.xy.length)))
+    ).filter((el) => el._2 > 1)
+
+    val slaveCount = input.inputAsIntOrElse("slaveCount", 0)
+    if (input.energy > 500 && !dangerDirections.isEmpty && slaveCount < 4 && input.generation < 4) {
+      val dangerDirection = dangerDirections.maxBy(_._2)._1
+      output.spawn(dangerDirection, "type" -> "swarm").set("slaveCount" -> (slaveCount + 1))
+    } else {
+      output
+    }
   }
 
-  def launchMissile(input: Input, output: Output) = output
-  def launchAntiMissile(input: Input, output: Output) = output
+  def eatRunLove(input: Input): Output = {
+    makeLove(input, eatAndRun(input, new Output))
+  }
+
+  def goHome(input: Input): Output = {
+    new Output()
+  }
 
   def react(input: Input): Output = {
-    launchSnorgTemper(input, launchMissile(input, launchAntiMissile(input, makeMove(input, new Output))))
+    if (input.generation == 0 || input.energy < 1000) eatRunLove(input)
+    else goHome(input)
   }
 }
-
-object SnorgDiversionaryBot {
-  def donttouchit(el: Element) = el match {
-    case Snorg => true
-    case Toxifera => true
-    case Wall => true
-    case _ => false
-  }
-
-
-//  def react(input: Input): Output =  {
-//    val unitOffsets = (for (
-//      x <- -1 to 1;
-//      y <- -1 to 1
-//      if !(x == 0 && y == 0 && !donttouchit(view.relative(XY(x, y))))
-//    ) yield (XY(x,y), weightPos(view, view.center, XY(x,y))))
-//
-//
-//  }
-}
-
