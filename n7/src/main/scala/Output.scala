@@ -5,7 +5,7 @@
  */
 case class Output(stateParams: Map[String, Any], commands: String, debugOutput: String,
                   history: List[(XY, XY)]) {
-  val historySize = 50
+  val historySize = 10
 
   def this() = this(Map.empty, "", "", List.empty)
   def this(params: Map[String, String]) = this(params, "", "", List.empty)

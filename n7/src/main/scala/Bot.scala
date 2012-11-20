@@ -46,6 +46,7 @@ object BotStrategies {
     case Snorg => true
     case Toxifera => true
     case Wall => true
+    case MiniBot => true
     case _ => false
   }
 
@@ -64,7 +65,7 @@ object BotStrategies {
 
     if (!movesWeights.isEmpty) {
       val currCoord = input.coords.head
-      val lastCoords = input.coords.take(10)
+      val lastCoords = input.coords
 
       val move = movesWeights.
         //поправка на предыдущие ходы
@@ -84,16 +85,16 @@ object BotStrategies {
   //начинаем размножаться в случае опасности и если энергии больше 250 и если концентрация наших ботов не слишком велика
   def makeLove(input: Input, output: Output) = {
     val view = input.view
-    val dangerDirections = XY.directions.map(xy =>
-      (xy, view.part45(xy).
-        count(elxy => (elxy.el == Snorg || elxy.el == EnemyMiniBot) && (3 to 8).contains(elxy.xy.length)))
-    ).filter((el) => el._2 > 1)
 
     val emptyCount = input.view.linear(el => el != Wall && el != Unknown).size
     val botsCount = input.view.linear(el => el == MiniBot).size
-    if (input.energy > 250 && !dangerDirections.isEmpty && (1.0 * botsCount) / emptyCount < 0.05) {
-      val dangerDirection = dangerDirections.maxBy(_._2)._1
-      output.spawn(dangerDirection, "type" -> "swarm")
+    if (input.energy > 250 && (1.0 * botsCount) / emptyCount < 0.025) {
+      val directions = XY.directions.
+        filter(xy => !donttouchit(view.from(xy)))
+      if (!directions.isEmpty)
+        output.spawn(directions.head, "type" -> "swarm")
+      else
+        output
     } else {
       output
     }
