@@ -1,4 +1,4 @@
-import WeightFunc._
+import WeightStrategies._
 /**
  * User: mick
  * Date: 29.08.12
@@ -21,32 +21,13 @@ object ControlFunction {
 }
 
 object BotStrategies {
-  def eatAndRunWeights(elxy: ElementXY) = elxy.el match {
-    case Snorg => sqrWeight(-400.0, elxy.xy.length, 1, 100)
-    case Toxifera => sqrtWeight(-10.0, elxy.xy.length, 0.1, 100)
-    case Empty => sqrtWeight(1.0, elxy.xy.length, 0.1, 100)
-    case Wall => sqrWeight(-10.0, elxy.xy.length, 0.1, 10000)
-    case Fluppet => linearWeight(400.0, elxy.xy.length, 0.1, 100)
-    case Zugar => linearWeight(200.0, elxy.xy.length, 0.1, 100)
-    case _ => 0.0
-  }
-
-  def goHomeWeights(elxy: ElementXY) = elxy.el match {
-    case Snorg => sqrWeight(-400.0, elxy.xy.length, 1, 100)
-    case Toxifera => sqrtWeight(-10.0, elxy.xy.length, 0.1, 100)
-    case Empty => sqrtWeight(1.0, elxy.xy.length, 0.1, 100)
-    case Wall => sqrWeight(-10.0, elxy.xy.length, 0.1, 10000)
-    case Fluppet => linearWeight(400.0, elxy.xy.length, 0.1, 100)
-    case Zugar => linearWeight(200.0, elxy.xy.length, 0.1, 100)
-    case Bot => sqrtWeight(1000.0, elxy.xy.length, 0.1, 100)
-    case _ => 0.0
-  }
-
   def donttouchit(el: Element) = el match {
     case Snorg => true
     case Toxifera => true
     case Wall => true
     case MiniBot => true
+    case EnemyBot => true
+    case EnemyMiniBot => true
     case _ => false
   }
 
@@ -82,17 +63,22 @@ object BotStrategies {
     }
   }
 
-  //начинаем размножаться в случае опасности и если энергии больше 250 и если концентрация наших ботов не слишком велика
+  //начинаем размножаться если энергии больше 250 и если концентрация наших ботов не слишком велика
   def makeLove(input: Input, output: Output) = {
     val view = input.view
 
     val emptyCount = input.view.linear(el => el != Wall && el != Unknown).size
     val botsCount = input.view.linear(el => el == MiniBot).size
-    if (input.energy > 250 && (1.0 * botsCount) / emptyCount < 0.025) {
+
+    val emptyCoeff = if (input.generation == 0) 0.1 else 0.025
+
+    if (input.energy > 250 && (1.0 * botsCount) / emptyCount < emptyCoeff) {
       val directions = XY.directions.
         filter(xy => !donttouchit(view.from(xy)))
       if (!directions.isEmpty)
-        output.spawn(directions.head, "type" -> "swarm")
+        output.spawn(directions.head,
+          "type" -> "swarm",
+          "mood" -> (if (input.generation == 0) "aggressive" else "def"))
       else
         output
     } else {
@@ -100,8 +86,35 @@ object BotStrategies {
     }
   }
 
+  def explode(input: Input, output: Output) = {
+    val view = input.view
+    val nearEnemies = view.
+      offsets(view.center, {el => el == EnemyMiniBot || el == EnemyBot || el == Snorg}).
+      filter(_.xy.length <= 3)
+
+    val enemies3 = nearEnemies.size
+    val enemies2 = nearEnemies.filter(_.xy.length <= 2).size
+    val enemies1 = nearEnemies.filter(_.xy.length <= 1).size
+
+    val explodeRadius =
+      if (enemies3 > 0) {
+        if (enemies3 >= 3 && (enemies2 == 0 || enemies1 == 0)) 3
+        else if (enemies2 > 0 && enemies3 / enemies2 >= 3) 3
+        else if (enemies1 > 0 && enemies2 / enemies1 >= 3) 2
+        else if (enemies1 > 0) 1
+        else 0
+      } else 0
+
+    if (explodeRadius > 0) output.explode(explodeRadius)
+    else output
+  }
+
   def eatRunLove(input: Input): Output = {
     makeLove(input, makeMove(input, new Output, eatAndRunWeights))
+  }
+
+  def aggressive(input: Input): Output = {
+    explode(input, makeLove(input, makeMove(input, new Output, attackWeights)))
   }
 
   def goHome(input: Input): Output = {
@@ -109,7 +122,9 @@ object BotStrategies {
   }
 
   def react(input: Input): Output = {
-    if (input.generation == 0 || input.energy < 1000) eatRunLove(input)
-    else goHome(input)
+    if (input.generation == 0) eatRunLove(input)
+    else if (input.energy > 1000) goHome(input)
+    else if (input.inputOrElse("mood", "def") == "aggressive") aggressive(input)
+    else eatRunLove(input)
   }
 }
