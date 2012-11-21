@@ -37,7 +37,9 @@ object BotStrategies {
       accu +  weights(exy) * (if (cos > 0.8) cos else 0.8)
     }
 
-  def makeMove(input: Input, output: Output, weights: ElementXY => Double) = {
+  def makeMove(input: Input, output: Output,
+               weights: ElementXY => Double,
+               directionWeights: ((XY, Double)) => (XY, Double)) = {
     val view = input.view
 
     val movesWeights = XY.directions.
@@ -45,23 +47,34 @@ object BotStrategies {
       map(xy => (xy, weightPos(view, view.center, xy, weights)))
 
     if (!movesWeights.isEmpty) {
-      val currCoord = input.coords.head
-      val lastCoords = input.coords
+//      val currCoord = input.coords.head
+//      val lastCoords = input.coords
+//
+//      val move = movesWeights.
+//        //поправка на предыдущие ходы
+//        map(mw =>
+//        if (lastCoords.contains(currCoord + mw._1))
+//          (mw._1, mw._2 - 50)
+//        else
+//          mw
+//      ).maxBy(_._2)._1
 
-      val move = movesWeights.
-        //поправка на предыдущие ходы
-        map(mw =>
-        if (lastCoords.contains(currCoord + mw._1))
-          (mw._1, mw._2 - 50)
-        else
-          mw
-      ).maxBy(_._2)._1
+      val move = movesWeights.map(mw => directionWeights(mw)).maxBy(_._2)._1
 
       new Output(Map.empty, input.history).move(move)
     } else {
       output
     }
   }
+
+  def cycleInhibit(input: Input)(mw: (XY, Double)) = {
+    val currCoord = input.coords.head
+    val lastCoords = input.coords
+
+    if (lastCoords.contains(currCoord + mw._1)) (mw._1, mw._2 - 50)
+    else mw
+  }
+
 
   //начинаем размножаться если энергии больше 250 и если концентрация наших ботов не слишком велика
   def makeLove(input: Input, output: Output) = {
@@ -109,21 +122,26 @@ object BotStrategies {
   }
 
   def eatRunLove(input: Input): Output = {
-    makeLove(input, makeMove(input, new Output, eatAndRunWeights))
+    makeLove(input, makeMove(input, new Output, eatAndRunWeights, cycleInhibit(input)))
   }
 
   def aggressive(input: Input): Output = {
-    explode(input, makeLove(input, makeMove(input, new Output, attackWeights)))
+    explode(input, makeLove(input, makeMove(input, new Output, attackWeights, cycleInhibit(input))))
   }
 
   def goHome(input: Input): Output = {
-    makeLove(input, makeMove(input, new Output, goHomeWeights))
+    makeLove(input, makeMove(input, new Output, goHomeWeights, cycleInhibit(input)))
+  }
+
+  def aggressiveGoHome(input: Input): Output = {
+    makeLove(input, makeMove(input, new Output, goHomeWeights, cycleInhibit(input)))
   }
 
   def react(input: Input): Output = {
     if (input.generation == 0) eatRunLove(input)
     else if (input.energy > 1000) goHome(input)
+    else if (input.energy > 3000) aggressiveGoHome(input)
     else if (input.inputOrElse("mood", "def") == "aggressive") aggressive(input)
-    else eatRunLove(input)
+    else if (math.random > 0.9) aggressive(input) else eatRunLove(input)
   }
 }
