@@ -70,15 +70,14 @@ object BotStrategies {
     val emptyCount = input.view.linear(el => el != Wall && el != Unknown).size
     val botsCount = input.view.linear(el => el == MiniBot).size
 
-    val emptyCoeff = if (input.generation == 0) 0.1 else 0.025
-
-    if (input.energy > 250 && (1.0 * botsCount) / emptyCount < emptyCoeff) {
+    if (input.energy > 250 && (1.0 * botsCount) / emptyCount < 0.025) {
       val directions = XY.directions.
         filter(xy => !donttouchit(view.from(xy)))
       if (!directions.isEmpty)
         output.spawn(directions.head,
           "type" -> "swarm",
-          "mood" -> (if (input.generation == 0) "aggressive" else "def"))
+          //каждый десятый - хыщник!
+          "mood" -> (if (math.random > 0.9) "aggressive" else "def"))
       else
         output
     } else {
