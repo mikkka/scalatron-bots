@@ -75,6 +75,14 @@ object BotStrategies {
     else mw
   }
 
+  def aggressiveGoHomeDir(input: Input)(mw: (XY, Double)) = {
+    val dir = mw._1
+    val weight = mw._2
+    val offsetToMaster = input.offsetToMaster
+    val cos = dir.scalar(offsetToMaster) / (dir.length * offsetToMaster.length)
+
+    (dir, weight * (if (cos > 0.7) cos else 0.7))
+  }
 
   //начинаем размножаться если энергии больше 250 и если концентрация наших ботов не слишком велика
   def makeLove(input: Input, output: Output) = {
@@ -90,7 +98,7 @@ object BotStrategies {
         output.spawn(directions.head,
           "type" -> "swarm",
           //каждый десятый - хыщник!
-          "mood" -> (if (math.random > 0.9) "aggressive" else "def"))
+          "mood" -> (if (math.random > 0.8) "aggressive" else "def"))
       else
         output
     } else {
@@ -134,13 +142,17 @@ object BotStrategies {
   }
 
   def aggressiveGoHome(input: Input): Output = {
-    makeLove(input, makeMove(input, new Output, goHomeWeights, cycleInhibit(input)))
+    val cycleInhibitor = cycleInhibit(input)(_)
+    val homeDir = aggressiveGoHomeDir(input)(_)
+    val homeWithoutCycle = {x: (XY, Double) => homeDir(cycleInhibitor(x))}
+
+    makeLove(input, makeMove(input, new Output, goHomeWeights, homeWithoutCycle))
   }
 
   def react(input: Input): Output = {
     if (input.generation == 0) eatRunLove(input)
+    //else if (input.energy > 10000) aggressiveGoHome(input)
     else if (input.energy > 1000) goHome(input)
-    else if (input.energy > 3000) aggressiveGoHome(input)
     else if (input.inputOrElse("mood", "def") == "aggressive") aggressive(input)
     else if (math.random > 0.9) aggressive(input) else eatRunLove(input)
   }
