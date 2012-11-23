@@ -1,3 +1,4 @@
+import util.Random
 import WeightStrategies._
 /**
  * User: mick
@@ -21,6 +22,8 @@ object ControlFunction {
 }
 
 object BotStrategies {
+  val rand = new Random()
+
   def donttouchit(el: Element) = el match {
     case Snorg => true
     case Toxifera => true
@@ -91,13 +94,14 @@ object BotStrategies {
       filter(xy => !donttouchit(view.from(xy)))
 
     if (!directions.isEmpty) {
+      val dir = if (directions.length == 1) directions(0) else directions(rand.nextInt(directions.length - 1))
       if(input.energy > 5000 && input.generation > 0) {
-        output.spawn(directions.head, "mood" ->  "feeder", "energy" -> 2500).say("feed my master")
+        output.spawn(dir, "mood" ->  "feeder", "energy" -> 2500).say("feed my master")
       } else {
         val emptyCount = input.view.linear(el => el != Wall && el != Unknown).size
         val friendlyBotsCount = input.view.linear(el => el == MiniBot).size
 
-        if (input.energy > 250 && (1.0 * friendlyBotsCount) / emptyCount < 0.025) {
+        if (input.energy > 250 && (1.0 * friendlyBotsCount) / emptyCount < 0.05) {
           val enemyBotsCount = input.view.linear(el => el == EnemyMiniBot).size
 
           val agrressiveCoeff = if (friendlyBotsCount * 0.6 > enemyBotsCount) 0.8
@@ -106,10 +110,10 @@ object BotStrategies {
           val energy = if (input.energy > 5000) 500
           else if (input.energy < 1000) 100
           else input.energy / 10
-          if (math.random > agrressiveCoeff)
-            output.spawn(directions.head, "mood" ->  "shahid", "energy" -> energy).say("hero is born")
+          if (rand.nextDouble() > agrressiveCoeff)
+            output.spawn(dir, "mood" ->  "shahid", "energy" -> energy)
           else
-            output.spawn(directions.head, "mood" ->  "hippie", "energy" -> energy)
+            output.spawn(dir, "mood" ->  "hippie", "energy" -> energy)
         } else {
           output
         }
