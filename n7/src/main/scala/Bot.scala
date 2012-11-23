@@ -87,25 +87,33 @@ object BotStrategies {
   //начинаем размножаться если энергии больше 250 и если концентрация наших ботов не слишком велика
   def makeLove(input: Input, output: Output) = {
     val view = input.view
+    val directions = XY.directions.
+      filter(xy => !donttouchit(view.from(xy)))
 
-    val emptyCount = input.view.linear(el => el != Wall && el != Unknown).size
-    val friendlyBotsCount = input.view.linear(el => el == MiniBot).size
+    if (!directions.isEmpty) {
+      if(input.energy > 5000 && input.generation > 0) {
+        output.spawn(directions.head, "mood" ->  "feeder", "energy" -> 2500).say("feed my master")
+      } else {
+        val emptyCount = input.view.linear(el => el != Wall && el != Unknown).size
+        val friendlyBotsCount = input.view.linear(el => el == MiniBot).size
 
-    if (input.energy > 250 && (1.0 * friendlyBotsCount) / emptyCount < 0.025) {
-      val enemyBotsCount = input.view.linear(el => el == EnemyMiniBot).size
+        if (input.energy > 250 && (1.0 * friendlyBotsCount) / emptyCount < 0.025) {
+          val enemyBotsCount = input.view.linear(el => el == EnemyMiniBot).size
 
-      val agrressiveCoeff = if (friendlyBotsCount > enemyBotsCount) 0.9
-      else 0.8
+          val agrressiveCoeff = if (friendlyBotsCount * 0.6 > enemyBotsCount) 0.8
+          else 0.7
 
-      val directions = XY.directions.
-        filter(xy => !donttouchit(view.from(xy)))
-      if (!directions.isEmpty)
-        if (math.random > agrressiveCoeff)
-          output.spawn(directions.head, "mood" ->  "shahid").say("hero is born")
-        else
-          output.spawn(directions.head, "mood" ->  "hippie")
-      else
-        output
+          val energy = if (input.energy > 5000) 500
+          else if (input.energy < 1000) 100
+          else input.energy / 10
+          if (math.random > agrressiveCoeff)
+            output.spawn(directions.head, "mood" ->  "shahid", "energy" -> energy).say("hero is born")
+          else
+            output.spawn(directions.head, "mood" ->  "hippie", "energy" -> energy)
+        } else {
+          output
+        }
+      }
     } else {
       output
     }
@@ -164,10 +172,10 @@ object BotStrategies {
     val energy = input.energy
     val generation = input.generation
     if (generation == 0) master(input)
-    //else if (input.energy > 10000) aggressiveGoHome(input)
     else if (energy > 1000) goHome(input)
     else if (mood == "shahid") aggressive(input)
-    else if (math.random > 0.99) aggressive(input).say("AAARGH!!!")
+    else if (mood == "feeder" && energy > 1000) aggressiveGoHome(input)
+    else if (math.random > 0.999) aggressive(input).say("AAARGH!!!")
     else eatRunLove(input)
   }
 }
