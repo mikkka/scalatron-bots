@@ -6,6 +6,18 @@ import WeightFunc._
  * Time: 16:55
  */
 object WeightStrategies {
+  def eatAndRunWeightsMaster(elxy: ElementXY) = elxy.el match {
+    case Snorg => sqrWeight(-400.0, elxy.xy.length, 1, 100)
+    case Toxifera => sqrtWeight(-10.0, elxy.xy.length, 0.1, 100)
+    case Empty => sqrtWeight(1.0, elxy.xy.length, 0.1, 100)
+    case Wall => sqrWeight(-10.0, elxy.xy.length, 0.1, 10000)
+    case Fluppet => linearWeight(400.0, elxy.xy.length, 0.1, 100)
+    case Zugar => linearWeight(200.0, elxy.xy.length, 0.1, 100)
+    case MiniBot => sqrtWeight(50.0, elxy.xy.length, 0.1, 100)
+    case EnemyBot => sqrtWeight(-100.0, elxy.xy.length, 0.1, 100)
+    case _ => 0.0
+  }
+
   def eatAndRunWeights(elxy: ElementXY) = elxy.el match {
     case Snorg => sqrWeight(-400.0, elxy.xy.length, 1, 100)
     case Toxifera => sqrtWeight(-10.0, elxy.xy.length, 0.1, 100)
@@ -35,7 +47,7 @@ object WeightStrategies {
     case Fluppet => linearWeight(400.0, elxy.xy.length, 0.1, 100)
     case Zugar => linearWeight(200.0, elxy.xy.length, 0.1, 100)
     case EnemyMiniBot => sqrtWeight(500, elxy.xy.length, 0, 1)
-    case EnemyBot => sqrtWeight(500, elxy.xy.length, 0, 1)
+    case EnemyBot => sqrtWeight(250, elxy.xy.length, 0, 1)
     case _ => 0.0
   }
 }
