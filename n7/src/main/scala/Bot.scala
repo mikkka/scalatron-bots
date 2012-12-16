@@ -50,18 +50,6 @@ object BotStrategies {
       map(xy => (xy, weightPos(view, view.center, xy, weights)))
 
     if (!movesWeights.isEmpty) {
-//      val currCoord = input.coords.head
-//      val lastCoords = input.coords
-//
-//      val move = movesWeights.
-//        //поправка на предыдущие ходы
-//        map(mw =>
-//        if (lastCoords.contains(currCoord + mw._1))
-//          (mw._1, mw._2 - 50)
-//        else
-//          mw
-//      ).maxBy(_._2)._1
-
       val move = movesWeights.map(mw => directionWeights(mw)).maxBy(_._2)._1
 
       new Output(Map.empty, input.history).move(move)
