@@ -10,7 +10,15 @@ case class Output(stateParams: Map[String, Any], commands: List[Command], histor
   def this(params: Map[String, String]) = this(params, List.empty, List.empty)
   def this(params: Map[String, String], h: List[(XY, XY)]) = this(params, List.empty, h)
 
-  def append(command: Command) = new Output(stateParams, command :: commands, history)
+  def append(command: Command): Output = command match {
+    case cmd: Move => new Output(stateParams, cmd :: commands, history).addHistory(cmd.offset)
+    case other => new Output(stateParams, other :: commands, history)
+  }
+
+  def append(command: Option[Command]): Output = command match {
+    case Some(cmd) => append(cmd)
+    case None => this
+  }
 
   def set(params: (String,Any)*) = new Output(stateParams ++ params, commands, history)
   def set(keyPrefix: String, xy: XY) =
@@ -41,7 +49,7 @@ case class Output(stateParams: Map[String, Any], commands: List[Command], histor
     result
   }
 
-  def move(direction: XY) = append(Move(direction))
+  def move(direction: XY) = append(Move(direction)).addHistory(direction)
   def say(text: String) = append(Say(text))
   def status(text: String) = append(Status(text))
   def explode(blastRadius: Int) = append(Explode(blastRadius))

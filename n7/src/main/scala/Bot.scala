@@ -40,9 +40,7 @@ object BotStrategies {
       accu +  weights(exy) * (if (cos > 0.8) cos else 0.8)
     }
 
-  def makeMove(input: Input, output: Output,
-               weights: ElementXY => Double,
-               directionWeights: ((XY, Double)) => (XY, Double)) = {
+  def makeMove(input: Input, weights: ElementXY => Double, directionWeights: ((XY, Double)) => (XY, Double)) = {
     val view = input.view
 
     val movesWeights = XY.directions.
@@ -52,9 +50,9 @@ object BotStrategies {
     if (!movesWeights.isEmpty) {
       val move = movesWeights.map(mw => directionWeights(mw)).maxBy(_._2)._1
 
-      new Output(Map.empty, input.history).move(move)
+      Some(Move(move))
     } else {
-      output
+      None
     }
   }
 
@@ -76,7 +74,7 @@ object BotStrategies {
   }
 
   //начинаем размножаться если энергии больше 250 и если концентрация наших ботов не слишком велика
-  def makeLove(input: Input, output: Output) = {
+  def makeLove(input: Input) = {
     val view = input.view
     val directions = XY.directions.
       filter(xy => !donttouchit(view.from(xy)))
@@ -84,7 +82,7 @@ object BotStrategies {
     if (!directions.isEmpty) {
       val dir = if (directions.length == 1) directions(0) else directions(rand.nextInt(directions.length - 1))
       if(input.energy > 5000 && input.generation > 0) {
-        output.spawn(dir, "feeder", 2500, "feeder").say("feed my master")
+        Some(Spawn(dir, "feeder", 2500, "feeder"))
       } else {
         val emptyCount = input.view.linear(el => el != Wall && el != Unknown).size
         val friendlyBotsCount = input.view.linear(el => el == MiniBot).size
@@ -99,19 +97,19 @@ object BotStrategies {
           else if (input.energy < 1000) 100
           else input.energy / 10
           if (rand.nextDouble() > agrressiveCoeff)
-            output.spawn(dir, "shahid", energy, "shahid")
+            Some(Spawn(dir, "shahid", energy, "shahid"))
           else
-            output.spawn(dir, "hippie", energy, "shahid")
+            Some(Spawn(dir, "hippie", energy, "shahid"))
         } else {
-          output
+          None
         }
       }
     } else {
-      output
+      None
     }
   }
 
-  def explode(input: Input, output: Output) = {
+  def explode(input: Input) = {
     val view = input.view
     val nearEnemies = view.
       offsets(view.center, {el => el == EnemyBot || el == EnemyMiniBot || el == Snorg}).
@@ -130,44 +128,56 @@ object BotStrategies {
         else 0
       } else 0
 
-    if (explodeRadius > 0)
-      output.say("FOR THE EMPEROR!!!").explode(explodeRadius)
-    else output
+    if (explodeRadius > 0) Some(Explode(explodeRadius))
+    else None
   }
 
-  def master(input: Input): Output = {
-    makeLove(input, makeMove(input, new Output, eatAndRunWeightsMaster, cycleInhibit(input)))
+  def master(input: Input, output: Output): Output = {
+    output.
+      append(makeMove(input, eatAndRunWeightsMaster, cycleInhibit(input))).
+      append(makeLove((input)))
   }
 
-  def eatRunLove(input: Input): Output = {
-    makeLove(input, makeMove(input, new Output, eatAndRunWeights, cycleInhibit(input)))
+  def eatRunLove(input: Input, output: Output): Output = {
+    output.
+      append(makeMove(input, eatAndRunWeights, cycleInhibit(input))).
+      append(makeLove(input))
   }
 
-  def aggressive(input: Input): Output = {
-    explode(input, makeLove(input, makeMove(input, new Output, attackWeights, cycleInhibit(input))))
+  def aggressive(input: Input, output: Output): Output = {
+    output.
+      append(makeMove(input, attackWeights, cycleInhibit(input))).
+      append(makeLove(input)).
+      append(explode(input))
   }
 
-  def goHome(input: Input): Output = {
-    makeLove(input, makeMove(input, new Output, goHomeWeights, cycleInhibit(input)))
+  def goHome(input: Input, output: Output): Output = {
+    output.
+      append(makeMove(input, goHomeWeights, cycleInhibit(input))).
+      append(makeLove(input))
   }
 
-  def aggressiveGoHome(input: Input): Output = {
+  def aggressiveGoHome(input: Input, output: Output): Output = {
     val cycleInhibitor = cycleInhibit(input)(_)
     val homeDir = aggressiveGoHomeDir(input)(_)
     val homeWithoutCycle = {x: (XY, Double) => homeDir(cycleInhibitor(x))}
 
-    makeLove(input, makeMove(input, new Output, goHomeWeights, homeWithoutCycle))
+    output.
+      append(makeMove(input, goHomeWeights, homeWithoutCycle)).
+      append(makeLove(input))
   }
 
   def react(input: Input): Output = {
+    val out = new Output(Map.empty, input.history)
     val mood = input.inputOrElse("mood", "")
     val energy = input.energy
     val generation = input.generation
-    if (generation == 0) master(input)
-    else if (energy > 1000) goHome(input)
-    else if (mood == "shahid") aggressive(input)
-    else if (mood == "feeder" && energy > 1000) aggressiveGoHome(input)
-    else if (math.random > 0.999) aggressive(input).say("AAARGH!!!")
-    else eatRunLove(input)
+
+    if (generation == 0) master(input, out)
+    else if (energy > 1000) goHome(input, out)
+    else if (mood == "shahid") aggressive(input, out)
+    else if (mood == "feeder" && energy > 1000) aggressiveGoHome(input, out)
+    else if (math.random > 0.999) aggressive(input, out).say("AAARGH!!!")
+    else eatRunLove(input, out)
   }
 }
