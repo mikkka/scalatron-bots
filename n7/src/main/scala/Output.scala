@@ -49,8 +49,19 @@ case class Output(stateParams: Map[String, Any], commands: List[Command], histor
 }
 
 sealed case class Command()
-case class Move(offset: XY) extends Command
-case class Spawn(offset: XY, name: String, energy: Int, mood: String) extends Command
-case class Explode(size: Int) extends Command
-case class Say(text: String) extends Command
-case class Status(text: String) extends Command
+case class Move(offset: XY) extends Command {
+  override def toString = "Move(direction=" + offset.x + ":" + offset.y + ")"
+}
+case class Spawn(offset: XY, name: String, energy: Int, mood: String) extends Command {
+  override def toString =
+    "Spawn(direction=" + offset.x + ":" + offset.y + ",name=" + name + ",energy=" + energy + ",mood=" + mood + ")"
+}
+case class Explode(size: Int) extends Command {
+  override def toString = "Explode(size=" + size + ")"
+}
+case class Say(text: String) extends Command {
+  override def toString = "Say(text=" + text + ")"
+}
+case class Status(text: String) extends Command {
+  override def toString = "Status(text=" + text + ")"
+}
