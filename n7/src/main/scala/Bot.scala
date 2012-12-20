@@ -99,7 +99,7 @@ object BotStrategies {
           if (rand.nextDouble() > agrressiveCoeff)
             Some(Spawn(dir, "shahid", energy, "shahid"))
           else
-            Some(Spawn(dir, "hippie", energy, "shahid"))
+            Some(Spawn(dir, "hippie", energy, "hippie"))
         } else {
           None
         }
