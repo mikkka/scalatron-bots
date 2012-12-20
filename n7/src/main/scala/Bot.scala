@@ -84,7 +84,7 @@ object BotStrategies {
     if (!directions.isEmpty) {
       val dir = if (directions.length == 1) directions(0) else directions(rand.nextInt(directions.length - 1))
       if(input.energy > 5000 && input.generation > 0) {
-        output.spawn(dir, "mood" ->  "feeder", "energy" -> 2500).say("feed my master")
+        output.spawn(dir, "feeder", 2500, "feeder").say("feed my master")
       } else {
         val emptyCount = input.view.linear(el => el != Wall && el != Unknown).size
         val friendlyBotsCount = input.view.linear(el => el == MiniBot).size
@@ -99,9 +99,9 @@ object BotStrategies {
           else if (input.energy < 1000) 100
           else input.energy / 10
           if (rand.nextDouble() > agrressiveCoeff)
-            output.spawn(dir, "mood" ->  "shahid", "energy" -> energy)
+            output.spawn(dir, "shahid", energy, "shahid")
           else
-            output.spawn(dir, "mood" ->  "hippie", "energy" -> energy)
+            output.spawn(dir, "hippie", energy, "shahid")
         } else {
           output
         }
