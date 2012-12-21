@@ -121,10 +121,10 @@ object BotStrategies {
 
     val explodeRadius =
       if (enemies3 > 0) {
-        if (enemies3 >= 3 && (enemies2 == 0 || enemies1 == 0)) 3
-        else if (enemies2 > 0 && enemies3 / enemies2 >= 3) 3
-        else if (enemies1 > 0 && enemies2 / enemies1 >= 3) 2
-        else if (enemies1 > 0) 1
+        if (enemies3 >= 3 && (enemies2 == 0 || enemies1 == 0)) 4
+        else if (enemies2 > 0 && enemies3 / enemies2 >= 3) 4
+        else if (enemies1 > 0 && enemies2 / enemies1 >= 3) 3
+        else if (enemies1 > 0) 2
         else 0
       } else 0
 
@@ -145,10 +145,13 @@ object BotStrategies {
   }
 
   def aggressive(input: Input, output: Output): Output = {
-    output.
-      append(makeMove(input, attackWeights, cycleInhibit(input))).
-      append(makeLove(input)).
-      append(explode(input))
+    val explodeCmd = explode(input)
+    explodeCmd match {
+      case Some(explode) =>
+        output.append(explode).say("BOOM!!!").append(makeMove(input, attackWeights, cycleInhibit(input)))
+      case None =>
+        output.append(makeMove(input, attackWeights, cycleInhibit(input))).append(makeLove(input))
+    }
   }
 
   def goHome(input: Input, output: Output): Output = {
