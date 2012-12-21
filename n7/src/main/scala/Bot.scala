@@ -109,10 +109,10 @@ object BotStrategies {
     }
   }
 
-  def explode(input: Input) = {
+  def explode(input: Input, offset: XY) = {
     val view = input.view
     val nearEnemies = view.
-      offsets(view.center, {el => el == EnemyBot || el == EnemyMiniBot || el == Snorg}).
+      offsets(view.center + offset, {el => el == EnemyBot || el == EnemyMiniBot || el == Snorg}).
       filter(_.xy.length <= 3)
 
     val enemies3 = nearEnemies.size
@@ -121,10 +121,10 @@ object BotStrategies {
 
     val explodeRadius =
       if (enemies3 > 0) {
-        if (enemies3 >= 3 && (enemies2 == 0 || enemies1 == 0)) 4
-        else if (enemies2 > 0 && enemies3 / enemies2 >= 3) 4
-        else if (enemies1 > 0 && enemies2 / enemies1 >= 3) 3
-        else if (enemies1 > 0) 2
+        if (enemies3 >= 3 && (enemies2 == 0 || enemies1 == 0)) 3
+        else if (enemies2 > 0 && enemies3 / enemies2 >= 3) 3
+        else if (enemies1 > 0 && enemies2 / enemies1 >= 3) 2
+        else if (enemies1 > 0) 1
         else 0
       } else 0
 
@@ -145,12 +145,17 @@ object BotStrategies {
   }
 
   def aggressive(input: Input, output: Output): Output = {
-    val explodeCmd = explode(input)
+    val move = makeMove(input, attackWeights, cycleInhibit(input))
+    val offset = move match {
+      case Some(move) => move.offset
+      case None => XY(0, 0)
+    }
+    val explodeCmd = explode(input, offset)
     explodeCmd match {
       case Some(explode) =>
-        output.append(explode).say("BOOM!!!").append(makeMove(input, attackWeights, cycleInhibit(input)))
+        output.append(explode).say("BOOM!!!").append(move)
       case None =>
-        output.append(makeMove(input, attackWeights, cycleInhibit(input))).append(makeLove(input))
+        output.append(move).append(makeLove(input))
     }
   }
 
