@@ -56,7 +56,7 @@ case class Output(stateParams: Map[String, Any], commands: List[Command], histor
   def spawn(offset: XY, name: String, energy: Int, mood: String) = append(Spawn(offset, name, energy, mood))
 }
 
-sealed case class Command()
+case class Command()
 case class Move(offset: XY) extends Command {
   override def toString = "Move(direction=" + offset.x + ":" + offset.y + ")"
 }
