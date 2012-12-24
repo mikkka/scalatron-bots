@@ -25,6 +25,8 @@ object WeightStrategies {
     case Wall => sqrWeight(-10.0, elxy.xy.length, 0.1, 10000)
     case Fluppet => linearWeight(400.0, elxy.xy.length, 0.1, 100)
     case Zugar => linearWeight(200.0, elxy.xy.length, 0.1, 100)
+    case MiniBot => sqrWeight(-10.0, elxy.xy.length, 0.1, 10000)
+    case EnemyBot => sqrWeight(-100.0, elxy.xy.length, 0.1, 10000)
     case _ => 0.0
   }
 
@@ -36,6 +38,8 @@ object WeightStrategies {
     case Fluppet => linearWeight(400.0, elxy.xy.length, 0.1, 100)
     case Zugar => linearWeight(200.0, elxy.xy.length, 0.1, 100)
     case Bot => sqrtWeight(1000.0, elxy.xy.length, 0.1, 100)
+    case MiniBot => sqrWeight(-10.0, elxy.xy.length, 0.1, 10000)
+    case EnemyBot => sqrWeight(-100.0, elxy.xy.length, 0.1, 10000)
     case _ => 0.0
   }
 
@@ -48,6 +52,7 @@ object WeightStrategies {
     case Zugar => linearWeight(200.0, elxy.xy.length, 0.1, 100)
     case EnemyMiniBot => sqrtWeight(500, elxy.xy.length, 0, 1)
     case EnemyBot => sqrtWeight(250, elxy.xy.length, 0, 1)
+    case MiniBot => sqrWeight(-10.0, elxy.xy.length, 0.1, 10000)
     case _ => 0.0
   }
 }
