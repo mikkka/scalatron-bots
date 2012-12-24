@@ -8,6 +8,9 @@ case class Input(params: Map[String, String]) {
   val energy = params("energy").toInt
   val time = params("time").toInt
   val generation = params("generation").toInt
+  val mood = inputOrElse("mood", "")
+  val offsetToMaster = inputAsXYOrElse("master", XY.Zero)
+  val collision = inputAsXYOrElse("collision", XY.Zero)
 
   val history = params.getOrElse("_history", "0:0;0:0").
     split(";").toList.
@@ -17,8 +20,6 @@ case class Input(params: Map[String, String]) {
 
   val moves = history.map(_._1)
   val coords = history.map(_._2)
-
-  def offsetToMaster = inputAsXYOrElse("master", XY.Zero)
 
   def inputOrElse(key: String, fallback: String) = params.getOrElse(key, fallback)
   def inputAsIntOrElse(key: String, fallback: Int) = params.get(key).map(_.toInt).getOrElse(fallback)

@@ -15,6 +15,8 @@ object ControlFunction {
 
     if( opcode == "React" ) {
       val input = new Input(paramMap)
+      if (input.collision != XY.Zero)
+        println("collision on " + input.mood + " " + input.collision)
       val output = BotStrategies.react(input)
       output.toString
     } else ""
