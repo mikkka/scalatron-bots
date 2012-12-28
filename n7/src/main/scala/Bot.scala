@@ -107,13 +107,24 @@ object BotStrategies {
           val agrressiveCoeff = if (friendlyBotsCount * 0.6 > enemyBotsCount) 0.8
           else 0.7
 
-          val energy = if (input.energy > 5000) 500
-          else if (input.energy < 1000) 100
-          else input.energy / 10
-          if (rand.nextDouble() > agrressiveCoeff)
+          val shahid = rand.nextDouble() > agrressiveCoeff
+
+          if (shahid) {
+            val energy = if (input.energy > 5000) 500
+            else if (input.energy < 1000) 100
+            else input.energy / 10
             Some(Spawn(dir, "shahid", energy, "shahid"))
-          else
+          } else {
+            val energy =
+              if (input.generation > 0)
+                if (input.energy > 1000) 500
+                else input.energy / 2
+              else
+                if (input.energy > 5000) 500
+                else if (input.energy < 1000) 100
+                else input.energy / 10
             Some(Spawn(dir, "hippie", energy, "hippie"))
+          }
         } else {
           None
         }
