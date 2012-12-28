@@ -117,8 +117,8 @@ object BotStrategies {
           } else {
             val energy =
               if (input.generation > 0)
-                if (input.energy > 1000) 500
-                else input.energy / 2
+                if (input.energy > 2000) 500
+                else input.energy / 4
               else
                 if (input.energy > 5000) 500
                 else if (input.energy < 1000) 100
