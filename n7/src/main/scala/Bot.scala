@@ -155,7 +155,7 @@ object BotStrategies {
     val explodeCmd = explode(input, offset)
     explodeCmd match {
       case Some(explode) =>
-        output.append(explode).say("BOOM!!!").append(move)
+        output.append(explode).say("BORODA!!!").append(move)
       case None =>
         output.append(move).append(makeLove(input))
     }
@@ -184,6 +184,8 @@ object BotStrategies {
     val generation = input.generation
 
     if (generation == 0) master(input, out)
+    else if (input.time > 4900) aggressiveGoHome(input, out)
+    else if (input.time > 4999) out.append(Explode(3)).say("watafaka!")
     else if (energy > 1000) goHome(input, out)
     else if (mood == "shahid") aggressive(input, out)
     else if (mood == "feeder" && energy > 1000) aggressiveGoHome(input, out)
