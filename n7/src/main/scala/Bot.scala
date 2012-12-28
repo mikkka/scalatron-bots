@@ -185,7 +185,7 @@ object BotStrategies {
 
     if (generation == 0) master(input, out)
     else if (input.time > 4900) aggressiveGoHome(input, out)
-    else if (input.time > 4999) out.append(Explode(3)).say("watafaka!")
+    else if (input.time > 4995) out.append(Explode(3)).say("watafaka!")
     else if (energy > 1000) goHome(input, out)
     else if (mood == "shahid") aggressive(input, out)
     else if (mood == "feeder" && energy > 1000) aggressiveGoHome(input, out)
