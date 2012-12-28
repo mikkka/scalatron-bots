@@ -43,19 +43,31 @@ object BotStrategies {
     }
 
   def makeMove(input: Input, weights: ElementXY => Double, directionWeights: ((XY, Double)) => (XY, Double)) = {
-    val view = input.view
+    val nearMoveProtection =
+      if (input.generation == 0)  {
+        val nearBotsSize = input.view.offsets(input.view.center, {_ == MiniBot}).
+          count(exy => exy.xy.length > 0 && exy.xy.length < 2)
 
-    val movesWeights = XY.directions.
-      filter(xy => !donttouchit(view.from(xy))).
-      map(xy => (xy, weightPos(view, view.center, xy, weights)))
+        if (nearBotsSize > 0) {
+          rand.nextDouble() > 1.0 / (nearBotsSize + 1)
+        } else false
+      } else false
 
-    if (!movesWeights.isEmpty) {
-      val move = movesWeights.map(mw => directionWeights(mw)).maxBy(_._2)._1
+    if(!nearMoveProtection) {
+      val view = input.view
 
-      Some(Move(move))
-    } else {
-      None
-    }
+      val movesWeights = XY.directions.
+        filter(xy => !donttouchit(view.from(xy))).
+        map(xy => (xy, weightPos(view, view.center, xy, weights)))
+
+      if (!movesWeights.isEmpty) {
+        val move = movesWeights.map(mw => directionWeights(mw)).maxBy(_._2)._1
+
+        Some(Move(move))
+      } else {
+        None
+      }
+    } else None
   }
 
   def cycleInhibit(input: Input)(mw: (XY, Double)) = {
