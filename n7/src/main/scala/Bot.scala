@@ -208,7 +208,7 @@ object BotStrategies {
     val generation = input.generation
 
     if (generation == 0) master(input, out)
-    else if (input.time > 4990) out.append(Explode(7)).say("watafaka!")
+    else if (input.time > 4990 && input.generation > 0) out.append(Explode(7)).say("watafaka!")
     else if (input.time > 4900) aggressiveGoHome(input, out)
     else if (energy > 1000) goHome(input, out)
     else if (mood == "shahid") aggressive(input, out)
