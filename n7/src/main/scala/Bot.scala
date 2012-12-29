@@ -101,7 +101,7 @@ object BotStrategies {
         val emptyCount = input.view.linear(el => el != Wall && el != Unknown).size
         val friendlyBotsCount = input.view.linear(el => el == MiniBot).size
 
-        if (input.energy > 250 && (1.0 * friendlyBotsCount) / emptyCount < 0.05) {
+        if (input.energy > 200 && (1.0 * friendlyBotsCount) / emptyCount < 0.05) {
           val enemyBotsCount = input.view.linear(el => el == EnemyMiniBot).size
 
           val agrressiveCoeff = if (friendlyBotsCount * 0.6 > enemyBotsCount) 0.8
@@ -117,8 +117,9 @@ object BotStrategies {
           } else {
             val energy =
               if (input.generation > 0)
-                if (input.energy > 2000) 500
-                else input.energy / 4
+                if (input.energy > 3000) 500
+                else if (input.energy < 1000) 100
+                else input.energy / 6
               else
                 if (input.energy > 5000) 500
                 else if (input.energy < 1000) 100
