@@ -11,3 +11,4 @@ parent.ids
 # Project's compiled files
 */target/
 */out/
+*/project/target
